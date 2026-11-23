@@ -254,6 +254,7 @@ func (c *Client) registerGofishProvider() {
 		redfish.WithPort(c.providerConfig.gofish.Port),
 		redfish.WithEtagMatchDisabled(c.providerConfig.gofish.DisableEtagMatch),
 		redfish.WithSystemName(c.providerConfig.gofish.SystemName),
+		redfish.WithVirtualMediaBootTarget(c.providerConfig.gofish.VirtualMediaBootTarget),
 	}
 
 	driverGoFish := redfish.New(c.Auth.Host, c.Auth.User, c.Auth.Pass, c.Logger, gofishOpts...)

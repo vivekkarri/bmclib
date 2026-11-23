@@ -2,6 +2,8 @@ package redfishwrapper
 
 import (
 	"context"
+	"fmt"
+	"slices"
 
 	"github.com/pkg/errors"
 	"github.com/stmcginnis/gofish/schemas"
@@ -75,6 +77,21 @@ var bootDeviceTypeMappings = []bootDeviceMapping{
 	},
 }
 
+// virtualMediaBootTargets are the BootSourceOverrideTargets WithVirtualMediaBootTarget accepts.
+var virtualMediaBootTargets = []schemas.BootSource{schemas.CdBootSource, schemas.UsbBootSource, usbCdBootSource}
+
+// bootTarget is the BootSourceOverrideTarget for device. For usb_cdrom it is the client's
+// virtual media boot target when one is set.
+func (c *Client) bootTarget(device string) (schemas.BootSource, error) {
+	if device != string(bmc.BootDeviceTypeUSBCDROM) || c.virtualMediaBootTarget == "" {
+		return bootDeviceStringToTarget(device)
+	}
+	if !slices.Contains(virtualMediaBootTargets, c.virtualMediaBootTarget) {
+		return "", fmt.Errorf("invalid virtual media boot target %q: want one of %v", c.virtualMediaBootTarget, virtualMediaBootTargets)
+	}
+	return c.virtualMediaBootTarget, nil
+}
+
 // bootDeviceStringToTarget gets the RedFish BootSource that corresponds to the given device string,
 // or an error if the device is not a RedFish BootSource.
 func bootDeviceStringToTarget(device string) (schemas.BootSource, error) {
@@ -117,7 +134,7 @@ func (c *Client) SystemBootDeviceSet(_ context.Context, bootDevice string, setPe
 	// which Supermicro rejects with Base.1.10.PropertyUnknown.
 	boot := schemas.Boot{}
 
-	boot.BootSourceOverrideTarget, err = bootDeviceStringToTarget(bootDevice)
+	boot.BootSourceOverrideTarget, err = c.bootTarget(bootDevice)
 	if err != nil {
 		return false, err
 	}

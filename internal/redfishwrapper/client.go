@@ -31,19 +31,20 @@ var (
 
 // Client is a redfishwrapper client which wraps the gofish client.
 type Client struct {
-	host                  string
-	port                  string
-	user                  string
-	pass                  string
-	systemName            string
-	systemSelector        func([]*schemas.ComputerSystem) (*schemas.ComputerSystem, error)
-	basicAuth             bool
-	disableEtagMatch      bool
-	versionsNotCompatible []string // a slice of redfish versions to ignore as incompatible
-	client                *gofish.APIClient
-	httpClient            *http.Client
-	httpClientSetupFuncs  []func(*http.Client)
-	logger                logr.Logger
+	host                   string
+	port                   string
+	user                   string
+	pass                   string
+	systemName             string
+	systemSelector         func([]*schemas.ComputerSystem) (*schemas.ComputerSystem, error)
+	basicAuth              bool
+	disableEtagMatch       bool
+	virtualMediaBootTarget schemas.BootSource
+	versionsNotCompatible  []string // a slice of redfish versions to ignore as incompatible
+	client                 *gofish.APIClient
+	httpClient             *http.Client
+	httpClientSetupFuncs   []func(*http.Client)
+	logger                 logr.Logger
 }
 
 // Option is a function applied to a *Conn
@@ -86,6 +87,15 @@ func WithBasicAuthEnabled(e bool) Option {
 func WithEtagMatchDisabled(d bool) Option {
 	return func(c *Client) {
 		c.disableEtagMatch = d
+	}
+}
+
+// WithVirtualMediaBootTarget sets the BootSourceOverrideTarget sent for boot device usb_cdrom,
+// the BMC's virtual CD, in place of UsbCd. It must be Cd, Usb or UsbCd: BMCs present virtual
+// media to the host as a CD, a USB device or a USB CD.
+func WithVirtualMediaBootTarget(target string) Option {
+	return func(c *Client) {
+		c.virtualMediaBootTarget = schemas.BootSource(target)
 	}
 }
 

@@ -104,6 +104,9 @@ type Config struct {
 	// DisableEtagMatch disables the If-Match Etag header from being included by the Gofish driver.
 	DisableEtagMatch bool
 	SystemName       string
+	// VirtualMediaBootTarget is the BootSourceOverrideTarget sent for boot device usb_cdrom: Cd, Usb or UsbCd.
+	// Unset, it is UsbCd.
+	VirtualMediaBootTarget string
 }
 
 // Option for setting optional Client values
@@ -144,6 +147,13 @@ func WithUseBasicAuth(useBasicAuth bool) Option {
 	}
 }
 
+// WithVirtualMediaBootTarget sets the BootSourceOverrideTarget sent for boot device usb_cdrom.
+func WithVirtualMediaBootTarget(target string) Option {
+	return func(c *Config) {
+		c.VirtualMediaBootTarget = target
+	}
+}
+
 // WithSystemName sets the name of the system to operate on.
 func WithSystemName(name string) Option {
 	return func(c *Config) {
@@ -177,6 +187,7 @@ func New(host, user, pass string, log logr.Logger, opts ...Option) *Conn {
 		redfishwrapper.WithEtagMatchDisabled(defaultConfig.DisableEtagMatch),
 		redfishwrapper.WithBasicAuthEnabled(defaultConfig.UseBasicAuth),
 		redfishwrapper.WithSystemName(defaultConfig.SystemName),
+		redfishwrapper.WithVirtualMediaBootTarget(defaultConfig.VirtualMediaBootTarget),
 	}
 
 	if defaultConfig.RootCAs != nil {

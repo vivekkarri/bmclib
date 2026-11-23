@@ -143,6 +143,16 @@ func WithRedfishEtagMatchDisabled(d bool) Option {
 	}
 }
 
+// WithRedfishVirtualMediaBootTarget sets the BootSourceOverrideTarget the redfish provider sends
+// for boot device usb_cdrom, the BMC's virtual CD, in place of UsbCd. It must be Cd, Usb or
+// UsbCd. Some BMCs present virtual media to the host as a USB device or as a CD, and boot
+// something else when asked for UsbCd.
+func WithRedfishVirtualMediaBootTarget(target string) Option {
+	return func(args *Client) {
+		args.providerConfig.gofish.VirtualMediaBootTarget = target
+	}
+}
+
 // WithRedfishSystemName sets the redfish system name targeted by the redfish provider.
 func WithRedfishSystemName(name string) Option {
 	return func(args *Client) {
